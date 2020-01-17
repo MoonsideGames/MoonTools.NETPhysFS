@@ -179,7 +179,7 @@ namespace SharpPhysFS
       {
         var strPtr = (IntPtr)Marshal.PtrToStructure(ptr, typeof(IntPtr));
         var str = Marshal.PtrToStringAnsi(strPtr);
-        if (System.IO.File.Exists(str)) { yield return str; } // the lib seems to be returning directories. boo!
+        if (!IsDirectory(str)) { yield return str; } // the lib seems to be returning directories. boo!
       }
       Interop.PHYSFS_freeList(files);
     }

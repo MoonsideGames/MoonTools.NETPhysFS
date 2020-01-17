@@ -11,5 +11,5 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <Import Project=".\build\copylibs.targets" />
+  <Import Project=".\targets\copylibs.targets" />
 </Project>
