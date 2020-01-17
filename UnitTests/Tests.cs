@@ -16,7 +16,7 @@ namespace UnitTests
     }
 
     [Theory]
-    [InlineData(2, 1, 0)]
+    [InlineData(3, 0, 2)]
     void VersionCheck(byte major, byte minor, byte patch)
     {
       using (var pfs = new PhysFS(""))
@@ -79,9 +79,10 @@ namespace UnitTests
       {
         pfs.Mount("./", "/", false);
 
+        System.Console.WriteLine(Path.GetFullPath("./"));
         var effectiveFiles = Directory.GetFiles("./").Select(x => Path.GetFileName(x)).ToArray();
         Array.Sort(effectiveFiles);
-        var enumeratedFiles = pfs.EnumerateFiles("/");
+        var enumeratedFiles = pfs.EnumerateFiles("/").ToArray();
         Array.Sort(enumeratedFiles);
 
         Assert.Equal(effectiveFiles, enumeratedFiles);
@@ -91,7 +92,7 @@ namespace UnitTests
     [Fact]
     void DriveEnumeration()
     {
-      using(var pfs = new PhysFS(""))
+      using (var pfs = new PhysFS(""))
       {
         var effectiveCdDrives = DriveInfo.GetDrives()
           .Where(x => x.DriveType == DriveType.CDRom)
@@ -110,7 +111,7 @@ namespace UnitTests
     [Fact]
     void UserDirectory()
     {
-      using(var pfs = new PhysFS(""))
+      using (var pfs = new PhysFS(""))
       {
         var userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var pfsUserDirectory = pfs.GetUserDir();
@@ -121,7 +122,7 @@ namespace UnitTests
     [Fact]
     void DirectoryManipulation()
     {
-      using(var pfs = new PhysFS(""))
+      using (var pfs = new PhysFS(""))
       {
         pfs.SetWriteDir("./");
         Assert.Equal("./", pfs.GetWriteDir());
@@ -141,8 +142,8 @@ namespace UnitTests
       {
         pfs.SetWriteDir("./");
         pfs.Mount("./", "/", true);
-        
-        using(var sw = new StreamWriter(pfs.OpenWrite("foo")))
+
+        using (var sw = new StreamWriter(pfs.OpenWrite("foo")))
         {
           sw.Write("hello, world! èòàùã こんにちは世界 你好世界");
         }
@@ -150,7 +151,7 @@ namespace UnitTests
         Assert.True(File.Exists("./foo"));
 
         var fileContent = File.ReadAllText("./foo");
-        using(var sr = new StreamReader(pfs.OpenRead("foo")))
+        using (var sr = new StreamReader(pfs.OpenRead("foo")))
         {
           Assert.Equal(fileContent, sr.ReadToEnd());
         }

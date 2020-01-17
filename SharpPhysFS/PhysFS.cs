@@ -172,11 +172,16 @@ namespace SharpPhysFS
     ///   </code>
     /// </para>
     /// <param name="dir">Directory in platform-independent notation to enumerate.</param>
-    public string[] EnumerateFiles(string dir)
+    public IEnumerable<string> EnumerateFiles(string dir)
     {
-      var list = new List<string>();
-      EnumerateFilesCallback(dir, (o, f) => list.Add(f));
-      return list.ToArray();
+      IntPtr files = Interop.PHYSFS_enumerateFiles(dir);
+      for (IntPtr ptr = files; Marshal.ReadIntPtr(ptr) != IntPtr.Zero; ptr = IntPtr.Add(ptr, IntPtr.Size))
+      {
+        var strPtr = (IntPtr)Marshal.PtrToStructure(ptr, typeof(IntPtr));
+        var str = Marshal.PtrToStringAnsi(strPtr);
+        if (System.IO.File.Exists(str)) { yield return str; } // the lib seems to be returning directories. boo!
+      }
+      Interop.PHYSFS_freeList(files);
     }
 
     /// <summary>
@@ -586,7 +591,7 @@ namespace SharpPhysFS
     public string GetMountPoint(string dir)
     {
       var s = Marshal.PtrToStringAnsi(Interop.PHYSFS_getMountPoint(dir));
-      if(s == null)
+      if (s == null)
       {
         throw new PhysFSException(this);
       }
@@ -601,7 +606,7 @@ namespace SharpPhysFS
         c(obj, s);
       };
     }
-    
+
     void GetCdRomDirsCallback(StringCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
@@ -632,7 +637,7 @@ namespace SharpPhysFS
     {
       Interop.PHYSFS_getCdRomDirsCallback((p, s) => c(s), IntPtr.Zero);
     }
-    
+
     void GetSearchPathCallback(StringCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
@@ -663,7 +668,7 @@ namespace SharpPhysFS
     {
       Interop.PHYSFS_getSearchPathCallback((p, s) => c(s), IntPtr.Zero);
     }
-    
+
     void EnumerateFilesCallback(string dir, EnumFilesCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
@@ -736,11 +741,12 @@ namespace SharpPhysFS
         disposedValue = true;
       }
     }
-    
-    ~PhysFS() {
+
+    ~PhysFS()
+    {
       Dispose(false);
     }
-    
+
     public void Dispose()
     {
       // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
