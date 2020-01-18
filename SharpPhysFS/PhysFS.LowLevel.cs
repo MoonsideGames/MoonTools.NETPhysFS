@@ -10,7 +10,7 @@ namespace SharpPhysFS
       public static IntPtr OpenWrite(string filename, PhysFS physFS)
       {
         var val = Interop.PHYSFS_openWrite(filename);
-        if (val == null)
+        if (val == IntPtr.Zero)
           throw new PhysFSException(physFS);
         return val;
       }
@@ -18,7 +18,7 @@ namespace SharpPhysFS
       public static IntPtr OpenAppend(string filename, PhysFS physFS)
       {
         var val = Interop.PHYSFS_openAppend(filename);
-        if (val == null)
+        if (val == IntPtr.Zero)
           throw new PhysFSException(physFS);
         return val;
       }
@@ -26,7 +26,7 @@ namespace SharpPhysFS
       public static IntPtr OpenRead(string filename, PhysFS physFS)
       {
         var val = Interop.PHYSFS_openRead(filename);
-        if (val == null)
+        if (val == IntPtr.Zero)
           throw new PhysFSException(physFS);
         return val;
       }

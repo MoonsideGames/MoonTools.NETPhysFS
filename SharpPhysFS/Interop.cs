@@ -6,16 +6,22 @@ namespace SharpPhysFS
 {
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate int InitDelegate();
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate void DeinitDelegate();
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate IntPtr MallocDelegate(ulong size);
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate IntPtr ReallocDelegate(IntPtr ptr, ulong size);
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate void FreeDelegate(IntPtr ptr);
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate void StringCallback(IntPtr data, string str);
+
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate void EnumFilesCallback(IntPtr data, string origdir, string fname);
 
@@ -62,7 +68,7 @@ namespace SharpPhysFS
     public FreeDelegate Free;
   }
 
-  static class Interop
+  internal static class Interop
   {
     private const string s_nativeLibName = "physfs";
 
@@ -106,10 +112,7 @@ namespace SharpPhysFS
     public static extern int PHYSFS_setWriteDir(string s);
 
     [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int PHYSFS_addToSearchPath(string s, int i);
-
-    [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int PHYSFS_removeFromSearchPath(string s);
+    public static extern int PHYSFS_unmount(string s);
 
     [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern IntPtr PHYSFS_getSearchPath();

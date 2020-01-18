@@ -8,11 +8,11 @@ using SharpPhysFS;
 
 namespace Test
 {
-  class Program
+  internal class Program
   {
-    static PhysFS physFS;
+    private static PhysFS physFS;
 
-    static void PrintSupportedArchives()
+    private static void PrintSupportedArchives()
     {
       Console.Write("Supported archive types: ");
       bool any = false;
@@ -33,7 +33,7 @@ namespace Test
       }
     }
 
-    static IEnumerable<string> ParseInput(string input)
+    private static IEnumerable<string> ParseInput(string input)
     {
       var sb = new StringBuilder();
       bool openString = false;
@@ -79,10 +79,10 @@ namespace Test
       }
     }
 
-    static Dictionary<string, Func<string[], bool>> commands = new Dictionary<string, Func<string[], bool>>();
+    private static Dictionary<string, Func<string[], bool>> commands = new Dictionary<string, Func<string[], bool>>();
 
     #region Commands
-    static bool Help(string[] args)
+    private static bool Help(string[] args)
     {
       Console.WriteLine("Commands:");
       foreach (var kvp in commands)
@@ -92,15 +92,14 @@ namespace Test
       return true;
     }
 
-    static bool Mount(string[] args)
+    private static bool Mount(string[] args)
     {
       if (args.Length < 3)
       {
         Console.WriteLine("Usage: mount <archive> <mntpoint> <append>");
         return false;
       }
-      bool append;
-      if (!bool.TryParse(args[2], out append))
+      if (!bool.TryParse(args[2], out bool append))
       {
         Console.WriteLine("append can only be true or false");
       }
@@ -109,7 +108,7 @@ namespace Test
       return true;
     }
 
-    static bool Enumerate(string[] args)
+    private static bool Enumerate(string[] args)
     {
       if (args.Length < 1)
       {
@@ -124,19 +123,19 @@ namespace Test
       return true;
     }
 
-    static bool GetLastError(string[] args)
+    private static bool GetLastError(string[] args)
     {
       Console.WriteLine(physFS.GetLastError());
       return true;
     }
 
-    static bool GetDirSeparator(string[] args)
+    private static bool GetDirSeparator(string[] args)
     {
       Console.WriteLine(physFS.GetDirSeparator());
       return true;
     }
 
-    static bool GetCdRomDirectories(string[] args)
+    private static bool GetCdRomDirectories(string[] args)
     {
       foreach(var d in physFS.GetCdRomDirs())
       {
@@ -145,7 +144,7 @@ namespace Test
       return true;
     }
 
-    static bool GetSearchPath(string[] args)
+    private static bool GetSearchPath(string[] args)
     {
       foreach (var d in physFS.GetSearchPath())
       {
@@ -154,25 +153,25 @@ namespace Test
       return true;
     }
 
-    static bool GetBaseDirectory(string[] args)
+    private static bool GetBaseDirectory(string[] args)
     {
       Console.WriteLine(physFS.GetBaseDir());
       return true;
     }
 
-    static bool GetUserDirectory(string[] args)
+    private static bool GetUserDirectory(string[] args)
     {
       Console.WriteLine(physFS.GetUserDir());
       return true;
     }
 
-    static bool GetWriteDirectory(string[] args)
+    private static bool GetWriteDirectory(string[] args)
     {
       Console.WriteLine(physFS.GetWriteDir());
       return true;
     }
 
-    static bool SetWriteDirectory(string[] args)
+    private static bool SetWriteDirectory(string[] args)
     {
       if (args.Length < 1)
       {
@@ -183,15 +182,14 @@ namespace Test
       return true;
     }
 
-    static bool PermitSymlinks(string[] args)
+    private static bool PermitSymlinks(string[] args)
     {
       if (args.Length < 1)
       {
         Console.WriteLine("Usage: permitsymlinks <true/false>");
         return false;
       }
-      bool permit;
-      if (!bool.TryParse(args[0], out permit))
+      if (!bool.TryParse(args[0], out bool permit))
       {
         Console.WriteLine("Usage: permitsymlinks <true/false>");
       }
@@ -199,15 +197,14 @@ namespace Test
       return true;
     }
 
-    static bool SetSaneConfig(string[] args)
+    private static bool SetSaneConfig(string[] args)
     {
       if(args.Length < 5)
       {
         Console.WriteLine("Usage: setsaneconfig <org> <appName> <arcExt> <includeCdRoms> <archivesFirst>");
         return false;
       }
-      bool includeCdRoms, archivesFirst;
-      if(bool.TryParse(args[3], out includeCdRoms) && bool.TryParse(args[4], out archivesFirst))
+      if (bool.TryParse(args[3], out bool includeCdRoms) && bool.TryParse(args[4], out bool archivesFirst))
       {
         physFS.SetSaneConfig(args[0], args[1], args[2], includeCdRoms, archivesFirst);
       }
@@ -218,18 +215,18 @@ namespace Test
       return true;
     }
 
-    static bool MkDir(string[] args)
+    private static bool MkDir(string[] args)
     {
       if (args.Length < 1)
       {
         Console.WriteLine("Usage: mkdir <dir>");
         return false;
       }
-      physFS.Mkdir(args[0]);
+      physFS.CreateDirectory(args[0]);
       return true;
     }
 
-    static bool Delete(string[] args)
+    private static bool Delete(string[] args)
     {
       if (args.Length < 1)
       {
@@ -240,7 +237,7 @@ namespace Test
       return true;
     }
 
-    static bool GetRealDir(string[] args)
+    private static bool GetRealDir(string[] args)
     {
       if (args.Length < 1)
       {
@@ -251,7 +248,7 @@ namespace Test
       return true;
     }
 
-    static bool Exists(string[] args)
+    private static bool Exists(string[] args)
     {
       if (args.Length < 1)
       {
@@ -262,7 +259,7 @@ namespace Test
       return true;
     }
 
-    static bool IsDir(string[] args)
+    private static bool IsDir(string[] args)
     {
       if (args.Length < 1)
       {
@@ -273,7 +270,7 @@ namespace Test
       return true;
     }
 
-    static bool IsSymlink(string[] args)
+    private static bool IsSymlink(string[] args)
     {
       if (args.Length < 1)
       {
@@ -284,7 +281,7 @@ namespace Test
       return true;
     }
 
-    static bool Cat(string[] args)
+    private static bool Cat(string[] args)
     {
       if (args.Length < 1)
       {
@@ -300,7 +297,7 @@ namespace Test
       return true;
     }
 
-    static bool FileLength(string[] args)
+    private static bool FileLength(string[] args)
     {
       if (args.Length < 1)
       {
@@ -314,7 +311,7 @@ namespace Test
       return true;
     }
 
-    static bool GetMountPoint(string[] args)
+    private static bool GetMountPoint(string[] args)
     {
       if (args.Length < 1)
       {
@@ -327,7 +324,7 @@ namespace Test
 
     #endregion
 
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
       try
       {
@@ -387,12 +384,11 @@ namespace Test
         }
         else
         {
-          Func<string[], bool> cmd;
-          if (commands.TryGetValue(split.First(), out cmd))
+          if (commands.TryGetValue(split.First(), out Func<string[], bool> cmd))
           {
             try
             {
-              if(cmd(split.Skip(1).ToArray()))
+              if (cmd(split.Skip(1).ToArray()))
               {
                 Console.WriteLine("Done.");
               }

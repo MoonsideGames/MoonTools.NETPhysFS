@@ -29,12 +29,12 @@ namespace SharpPhysFS
       Init(argv0);
     }
 
-    static T FromPtr<T>(IntPtr ptr)
+    private static T FromPtr<T>(IntPtr ptr)
     {
       return (T)Marshal.PtrToStructure(ptr, typeof(T));
     }
 
-    void ThrowException(int err)
+    private void ThrowException(int err)
     {
       if (err == 0)
       {
@@ -85,7 +85,7 @@ namespace SharpPhysFS
     /// All default API states are restored at this point, with the exception of any custom allocator you might have specified, which survives between initializations.
     /// NOTE: This is called automatically on disposal.
     /// </remarks>
-    public void Deinit()
+    public void DeInit()
     {
       int err = Interop.PHYSFS_deinit();
       ThrowException(err);
@@ -179,7 +179,7 @@ namespace SharpPhysFS
       {
         var strPtr = (IntPtr)Marshal.PtrToStructure(ptr, typeof(IntPtr));
         var str = Marshal.PtrToStringAnsi(strPtr);
-        if (!IsDirectory(str)) { yield return str; } // the lib seems to be returning directories. boo!
+        if (!IsDirectory(str)) { yield return str; } // the dll seems to be returning directories. boo!
       }
       Interop.PHYSFS_freeList(files);
     }
@@ -199,12 +199,11 @@ namespace SharpPhysFS
     public IEnumerable<ArchiveInfo> SupportedArchiveTypes()
     {
       IntPtr archives = Interop.PHYSFS_supportedArchiveTypes();
-      IntPtr i = archives;
+      IntPtr i;
       for (i = archives; Marshal.ReadIntPtr(i) != IntPtr.Zero; i = IntPtr.Add(i, IntPtr.Size))
       {
         IntPtr ptr = Marshal.ReadIntPtr(i);
-        var info = FromPtr<ArchiveInfo>(ptr);
-        yield return info;
+        yield return FromPtr<ArchiveInfo>(ptr);
       }
     }
 
@@ -323,18 +322,6 @@ namespace SharpPhysFS
     }
 
     /// <summary>
-    /// Add an archive or directory to the search path.
-    /// </summary>
-    /// <param name="newDir">Directory or archive to add to the path, in platform-dependent notation</param>
-    /// <param name="appendToPath">true to append to search path, false to prepend</param>
-    [Obsolete("AddToSearchPath is deprecated, please use Mount instead")]
-    public void AddToSearchPath(string newDir, bool appendToPath)
-    {
-      int err = Interop.PHYSFS_addToSearchPath(newDir, appendToPath ? 1 : 0);
-      ThrowException(err);
-    }
-
-    /// <summary>
     /// Remove a directory or archive from the search path.
     /// </summary>
     /// <para>
@@ -344,9 +331,9 @@ namespace SharpPhysFS
     /// This call will fail (and fail to remove from the path) if the element still has files open in it.
     /// </para>
     /// <param name="oldDir">	dir/archive to remove.</param>
-    public void RemoveFromSearchPath(string oldDir)
+    public void UnMount(string oldDir)
     {
-      int err = Interop.PHYSFS_removeFromSearchPath(oldDir);
+      int err = Interop.PHYSFS_unmount(oldDir);
       ThrowException(err);
     }
 
@@ -434,7 +421,7 @@ namespace SharpPhysFS
     /// then the function leaves the created directory behind and reports failure.
     /// </para>
     /// <param name="dirName">New dir to create.</param>
-    public void Mkdir(string dirName)
+    public void CreateDirectory(string dirName)
     {
       int err = Interop.PHYSFS_mkdir(dirName);
       ThrowException(err);
@@ -598,7 +585,7 @@ namespace SharpPhysFS
       return s;
     }
 
-    StringCallback WrapStringCallback<T>(Action<T, string> c)
+    private StringCallback WrapStringCallback<T>(Action<T, string> c)
     {
       return (d, s) =>
       {
@@ -607,7 +594,7 @@ namespace SharpPhysFS
       };
     }
 
-    void GetCdRomDirsCallback(StringCallback c, object data)
+    private void GetCdRomDirsCallback(StringCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
       Interop.PHYSFS_getCdRomDirsCallback(c, GCHandle.ToIntPtr(objHandle));
@@ -635,10 +622,10 @@ namespace SharpPhysFS
     /// <param name="c">Callback function to notify about detected drives.</param>
     public void GetCdRomDirsCallback(Action<string> c)
     {
-      Interop.PHYSFS_getCdRomDirsCallback((p, s) => c(s), IntPtr.Zero);
+      Interop.PHYSFS_getCdRomDirsCallback((_, s) => c(s), IntPtr.Zero);
     }
 
-    void GetSearchPathCallback(StringCallback c, object data)
+    private void GetSearchPathCallback(StringCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
       Interop.PHYSFS_getSearchPathCallback(c, GCHandle.ToIntPtr(objHandle));
@@ -666,10 +653,10 @@ namespace SharpPhysFS
     /// <param name="c">Callback function to notify about search path elements.</param>
     public void GetSearchPathCallback(Action<string> c)
     {
-      Interop.PHYSFS_getSearchPathCallback((p, s) => c(s), IntPtr.Zero);
+      Interop.PHYSFS_getSearchPathCallback((_, s) => c(s), IntPtr.Zero);
     }
 
-    void EnumerateFilesCallback(string dir, EnumFilesCallback c, object data)
+    private void EnumerateFilesCallback(string dir, EnumFilesCallback c, object data)
     {
       GCHandle objHandle = GCHandle.Alloc(data);
       Interop.PHYSFS_enumerateFilesCallback(dir, c, GCHandle.ToIntPtr(objHandle));
@@ -703,7 +690,7 @@ namespace SharpPhysFS
     /// <param name="c">Callback function to notify about search path elements.</param>
     public void EnumerateFilesCallback(string dir, Action<string, string> c)
     {
-      Interop.PHYSFS_enumerateFilesCallback(dir, (data, origdir, fname) => c(origdir, fname), IntPtr.Zero);
+      Interop.PHYSFS_enumerateFilesCallback(dir, (_, origdir, fname) => c(origdir, fname), IntPtr.Zero);
     }
 
     public PhysFSStream OpenAppend(string file)
@@ -730,13 +717,13 @@ namespace SharpPhysFS
     #region IDisposable Support
     private bool disposedValue = false; // To detect redundant calls
 
-    void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
       if (!disposedValue)
       {
         if (disposing)
         {
-          Deinit();
+          DeInit();
         }
         disposedValue = true;
       }

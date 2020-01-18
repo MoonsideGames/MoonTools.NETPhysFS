@@ -1,170 +1,155 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Xunit;
+using FluentAssertions;
+using NUnit.Framework;
 using SharpPhysFS;
 
 namespace UnitTests
 {
   public class Tests
   {
-    [Fact]
-    void IsInit()
+    [Test]
+    public void IsInit()
     {
-      using (var pfs = new PhysFS(""))
-        Assert.True(pfs.IsInit(), "PhysFS was not initialized");
+      using var pfs = new PhysFS("");
+      Assert.True(pfs.IsInit(), "PhysFS was not initialized");
     }
 
     [Theory]
-    [InlineData(3, 0, 2)]
-    void VersionCheck(byte major, byte minor, byte patch)
+    [TestCase(3, 0, 2)]
+    public void VersionCheck(byte major, byte minor, byte patch)
     {
-      using (var pfs = new PhysFS(""))
-        Assert.Equal(new SharpPhysFS.Version() { major = major, minor = minor, patch = patch }, pfs.GetLinkedVersion());
+      using var pfs = new PhysFS("");
+      new SharpPhysFS.Version() { major = major, minor = minor, patch = patch }.Should().BeEquivalentTo(pfs.GetLinkedVersion());
     }
 
-    [Fact]
-    void DirSeparator()
+    [Test]
+    public void DirSeparator()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        Assert.NotNull(pfs.GetDirSeparator());
-        Assert.NotEqual("", pfs.GetDirSeparator());
-      }
+      using var pfs = new PhysFS("");
+      pfs.GetDirSeparator().Should().NotBeNullOrEmpty();
     }
 
-    [Fact]
-    void PermitSymbolicLinks()
+    [Test]
+    public void PermitSymbolicLinks()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        Assert.False(pfs.SymbolicLinksPermitted());
-        pfs.PermitSymbolicLinks(true);
-        Assert.True(pfs.SymbolicLinksPermitted());
-        pfs.PermitSymbolicLinks(false);
-        Assert.False(pfs.SymbolicLinksPermitted());
-      }
+      using var pfs = new PhysFS("");
+      pfs.SymbolicLinksPermitted().Should().BeFalse();
+      pfs.PermitSymbolicLinks(true);
+      pfs.SymbolicLinksPermitted().Should().BeTrue();
+      pfs.PermitSymbolicLinks(false);
+      pfs.SymbolicLinksPermitted().Should().BeFalse();
     }
 
-    [Fact]
-    void Mounting()
+    [Test]
+    public void Mounting()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        Assert.Empty(pfs.GetSearchPath());
-        pfs.Mount("./", "/", false);
-        Assert.Equal(new string[] { "./" }, pfs.GetSearchPath());
-        Assert.Equal("/", pfs.GetMountPoint("./"));
-        Assert.True(pfs.IsDirectory("/"));
+      using var pfs = new PhysFS("");
+      pfs.GetSearchPath().Should().BeEmpty();
 
-        pfs.Mount("../", "foo", true);
-        Assert.Equal(new string[] { "./", "../", }, pfs.GetSearchPath());
-        Assert.Equal("foo/", pfs.GetMountPoint("../"));
-        Assert.True(pfs.IsDirectory("/foo"));
+      pfs.Mount("./", "/", false);
 
-        pfs.Mount("../../", "bar", false);
-        Assert.Equal(new string[] { "../../", "./", "../", }, pfs.GetSearchPath());
-        Assert.Equal("bar/", pfs.GetMountPoint("../../"));
-        Assert.True(pfs.IsDirectory("/bar"));
+      pfs.GetSearchPath().Should().BeEquivalentTo(new string[] { "./" });
+      pfs.GetMountPoint("./").Should().Be("/");
+      pfs.IsDirectory("/").Should().BeTrue();
 
-        pfs.RemoveFromSearchPath("../");
-        Assert.Equal(new string[] { "../../", "./", }, pfs.GetSearchPath());
-      }
+      pfs.Mount("../", "foo", true);
+      pfs.GetSearchPath().Should().BeEquivalentTo(new string[] { "./", "../" });
+      pfs.GetMountPoint("../").Should().Be("foo/");
+      pfs.IsDirectory("/foo").Should().BeTrue();
+
+      pfs.Mount("../../", "bar", false);
+      pfs.GetSearchPath().Should().BeEquivalentTo(new string[] { "../../", "./", "../" });
+      pfs.GetMountPoint("../../").Should().Be("bar/");
+      pfs.IsDirectory("/bar").Should().BeTrue();
+
+      pfs.UnMount("../");
+      pfs.GetSearchPath().Should().BeEquivalentTo(new string[] { "../../", "./" });
     }
 
-    [Fact]
-    void FileEnumeration()
+    [Test]
+    public void FileEnumeration()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        pfs.Mount("./", "/", false);
+      using var pfs = new PhysFS("");
+      pfs.Mount("./", "/", false);
 
-        System.Console.WriteLine(Path.GetFullPath("./"));
-        var effectiveFiles = Directory.GetFiles("./").Select(x => Path.GetFileName(x)).ToArray();
-        Array.Sort(effectiveFiles);
-        var enumeratedFiles = pfs.EnumerateFiles("/").ToArray();
-        Array.Sort(enumeratedFiles);
+      var effectiveFiles = Directory.GetFiles("./").Select(Path.GetFileName).ToArray();
+      Array.Sort(effectiveFiles);
+      var enumeratedFiles = pfs.EnumerateFiles("/").ToArray();
+      Array.Sort(enumeratedFiles);
 
-        Assert.Equal(effectiveFiles, enumeratedFiles);
-      }
+      enumeratedFiles.Should().BeEquivalentTo(effectiveFiles);
     }
 
-    [Fact]
-    void DriveEnumeration()
+    [Test]
+    public void DriveEnumeration()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        var effectiveCdDrives = DriveInfo.GetDrives()
-          .Where(x => x.DriveType == DriveType.CDRom)
-          .Select(x => x.RootDirectory.FullName)
-          .ToArray();
+      using var pfs = new PhysFS("");
+      var effectiveCdDrives = DriveInfo.GetDrives()
+        .Where(x => x.DriveType == DriveType.CDRom)
+        .Select(x => x.RootDirectory.FullName)
+        .ToArray();
 
-        var enumeratedCdDrives = pfs.GetCdRomDirs();
+      var enumeratedCdDrives = pfs.GetCdRomDirs();
 
-        Array.Sort(effectiveCdDrives);
-        Array.Sort(enumeratedCdDrives);
+      Array.Sort(effectiveCdDrives);
+      Array.Sort(enumeratedCdDrives);
 
-        Assert.Equal(effectiveCdDrives, enumeratedCdDrives);
-      }
+      enumeratedCdDrives.Should().BeEquivalentTo(effectiveCdDrives);
     }
 
-    [Fact]
-    void UserDirectory()
+    [Test]
+    public void UserDirectory()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        var userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var pfsUserDirectory = pfs.GetUserDir();
-        Assert.Equal(Path.GetPathRoot(userDirectory), Path.GetPathRoot(pfsUserDirectory));
-      }
+      using var pfs = new PhysFS("");
+      var userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+      var pfsUserDirectory = pfs.GetUserDir();
+      Path.GetPathRoot(pfsUserDirectory).Should().Be(Path.GetPathRoot(userDirectory));
     }
 
-    [Fact]
-    void DirectoryManipulation()
+    [Test]
+    public void DirectoryManipulation()
     {
-      using (var pfs = new PhysFS(""))
-      {
-        pfs.SetWriteDir("./");
-        Assert.Equal("./", pfs.GetWriteDir());
+      using var pfs = new PhysFS("");
+      pfs.SetWriteDir("./");
+      pfs.GetWriteDir().Should().Be("./");
 
-        pfs.Mkdir("hello");
-        Assert.True(Directory.Exists("./hello"));
+      pfs.CreateDirectory("hello");
+      Directory.Exists("./hello").Should().BeTrue();
 
-        pfs.Delete("hello");
-        Assert.False(Directory.Exists("./hello"));
-      }
+      pfs.Delete("hello");
+      Directory.Exists("./hello").Should().BeFalse();
     }
 
-    [Fact]
-    void FileManipulation()
+    [Test]
+    public void FileManipulation()
     {
-      using (var pfs = new PhysFS(""))
+      using var pfs = new PhysFS("");
+      pfs.SetWriteDir("./");
+      pfs.Mount("./", "/", true);
+
+      using (var sw = new StreamWriter(pfs.OpenWrite("foo")))
       {
-        pfs.SetWriteDir("./");
-        pfs.Mount("./", "/", true);
-
-        using (var sw = new StreamWriter(pfs.OpenWrite("foo")))
-        {
-          sw.Write("hello, world! èòàùã こんにちは世界 你好世界");
-        }
-
-        Assert.True(File.Exists("./foo"));
-
-        var fileContent = File.ReadAllText("./foo");
-        using (var sr = new StreamReader(pfs.OpenRead("foo")))
-        {
-          Assert.Equal(fileContent, sr.ReadToEnd());
-        }
-
-        using (var sw = new StreamWriter(pfs.OpenAppend("foo")))
-        {
-          sw.Write("foo");
-        }
-        Assert.Equal(fileContent + "foo", File.ReadAllText("./foo"));
-
-        pfs.Delete("foo");
-        Assert.False(File.Exists("./foo"));
+        sw.Write("hello, world! èòàùã こんにちは世界 你好世界");
       }
+
+      Assert.True(File.Exists("./foo"));
+
+      var fileContent = File.ReadAllText("./foo");
+      using (var sr = new StreamReader(pfs.OpenRead("foo")))
+      {
+        sr.ReadToEnd().Should().BeEquivalentTo(fileContent);
+      }
+
+      using (var sw = new StreamWriter(pfs.OpenAppend("foo")))
+      {
+        sw.Write("foo");
+      }
+      File.ReadAllText("./foo").Should().BeEquivalentTo(fileContent + "foo");
+
+      pfs.Delete("foo");
+      Assert.False(File.Exists("./foo"));
     }
   }
 }

@@ -5,9 +5,9 @@ namespace SharpPhysFS
 {
   public class PhysFSStream : Stream
   {
-    IntPtr handle;
-    bool readOnly = false;
-    PhysFS physFS;
+    private IntPtr handle;
+    private readonly bool readOnly;
+    private readonly PhysFS physFS;
 
     internal PhysFSStream(PhysFS pfs, IntPtr ptr, bool readOnly)
     {
@@ -77,7 +77,7 @@ namespace SharpPhysFS
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-      long pos = 0;
+      long pos;
       if (origin == SeekOrigin.Begin)
         pos = 0;
       else if (origin == SeekOrigin.Current)
