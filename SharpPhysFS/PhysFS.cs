@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace SharpPhysFS
+namespace MoonTools.NETPhysFS
 {
   public class PhysFSLibNotFound : Exception
   {
@@ -253,11 +253,16 @@ namespace SharpPhysFS
     /// This call may block while drives spin up. Be forewarned.
     /// </remarks>
     /// <returns>An enumeration of paths to available CD-ROM drives.</returns>
-    public string[] GetCdRomDirs()
+    public IEnumerable<string> GetCdRomDirs()
     {
-      var list = new List<string>();
-      GetCdRomDirsCallback((s) => list.Add(s));
-      return list.ToArray();
+      IntPtr files = Interop.PHYSFS_getCdRomDirs();
+      for (IntPtr ptr = files; Marshal.ReadIntPtr(ptr) != IntPtr.Zero; ptr = IntPtr.Add(ptr, IntPtr.Size))
+      {
+        var strPtr = (IntPtr)Marshal.PtrToStructure(ptr, typeof(IntPtr));
+        var str = Marshal.PtrToStringAnsi(strPtr);
+        if (!IsDirectory(str)) { yield return str; } // the dll seems to be returning directories. boo!
+      }
+      Interop.PHYSFS_freeList(files);
     }
 
     /// <summary>
@@ -340,11 +345,16 @@ namespace SharpPhysFS
     /// <summary>
     /// Get the current search path.
     /// </summary>
-    public string[] GetSearchPath()
+    public IEnumerable<string> GetSearchPath()
     {
-      var list = new List<string>();
-      GetSearchPathCallback((s) => list.Add(s));
-      return list.ToArray();
+      IntPtr files = Interop.PHYSFS_getSearchPath();
+      for (IntPtr ptr = files; Marshal.ReadIntPtr(ptr) != IntPtr.Zero; ptr = IntPtr.Add(ptr, IntPtr.Size))
+      {
+        var strPtr = (IntPtr)Marshal.PtrToStructure(ptr, typeof(IntPtr));
+        var str = Marshal.PtrToStringAnsi(strPtr);
+        if (!IsDirectory(str)) { yield return str; } // the dll seems to be returning directories. boo!
+      }
+      Interop.PHYSFS_freeList(files);
     }
 
     /// <summary>

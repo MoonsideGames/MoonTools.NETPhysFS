@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SharpPhysFS
+namespace MoonTools.NETPhysFS
 {
   public sealed partial class PhysFS
   {

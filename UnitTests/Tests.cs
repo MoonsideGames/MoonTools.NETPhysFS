@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
-using SharpPhysFS;
+using MoonTools.NETPhysFS;
 
 namespace UnitTests
 {
@@ -21,7 +21,7 @@ namespace UnitTests
     public void VersionCheck(byte major, byte minor, byte patch)
     {
       using var pfs = new PhysFS("");
-      new SharpPhysFS.Version() { major = major, minor = minor, patch = patch }.Should().BeEquivalentTo(pfs.GetLinkedVersion());
+      new MoonTools.NETPhysFS.Version() { major = major, minor = minor, patch = patch }.Should().BeEquivalentTo(pfs.GetLinkedVersion());
     }
 
     [Test]
@@ -89,13 +89,10 @@ namespace UnitTests
       var effectiveCdDrives = DriveInfo.GetDrives()
         .Where(x => x.DriveType == DriveType.CDRom)
         .Select(x => x.RootDirectory.FullName)
+        .OrderBy(s => s)
         .ToArray();
 
-      var enumeratedCdDrives = pfs.GetCdRomDirs();
-
-      Array.Sort(effectiveCdDrives);
-      Array.Sort(enumeratedCdDrives);
-
+      var enumeratedCdDrives = pfs.GetCdRomDirs().OrderBy(s => s);
       enumeratedCdDrives.Should().BeEquivalentTo(effectiveCdDrives);
     }
 

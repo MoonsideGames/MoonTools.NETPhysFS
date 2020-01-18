@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace SharpPhysFS
+namespace MoonTools.NETPhysFS
 {
   [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
   public delegate int InitDelegate();

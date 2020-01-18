@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SharpPhysFS
+namespace MoonTools.NETPhysFS
 {
   public class PhysFSStream : Stream
   {
@@ -89,19 +89,19 @@ namespace SharpPhysFS
       return pos + offset;
     }
 
-    public long Write(byte[] buffer, uint offset, uint count)
+    public long Write(byte[] buffer, uint count)
     {
       return PhysFS.LowLevel.Write(handle, buffer, 1, count);
     }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-      Write(buffer, (uint)offset, (uint)count);
+      Write(buffer, (uint)count);
     }
 
     public override void SetLength(long value)
     {
-      throw new NotImplementedException();
+      throw new NotSupportedException();
     }
 
     protected override void Dispose(bool disposing)
