@@ -13,6 +13,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SharpPhysFS\NETPhysFS.csproj" />
+    <ProjectReference Include="..\NETPhysFS\NETPhysFS.csproj" />
   </ItemGroup>
 </Project>
