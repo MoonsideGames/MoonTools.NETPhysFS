@@ -24,3 +24,7 @@ using (var reader = new StreamReader(pfs.OpenRead("/helloworld.txt")))
   var contents = reader.ReadToEnd();
 }
 ```
+
+## Acknowledgements
+
+This project was forked from the very helpful SharpPhysFS by Francesco Bertolaccini.
