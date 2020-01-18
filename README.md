@@ -10,10 +10,10 @@ It provides *IEnumerable* iterators to avoid creating garbage, and a *Stream* su
 You can use this library by adding it as a submodule and then referencing it in your .csproj file.
 
 ```sh
-  git submodule add
+  git submodule add git@github.com:MoonsideGames/MoonTools.NETPhysFS.git
 ```
 
-You must include a compiled binary of PhysFS for your platform for this to work properly.
+You must also include a compiled binary of PhysFS for your platform for this to work properly.
 
 ## Example
 
