@@ -11,9 +11,6 @@ namespace MoonTools.NETPhysFS
     { }
   }
 
-  /// <summary>
-  /// Main class for SharpPhysFS
-  /// </summary>
   public sealed partial class PhysFS
     : IDisposable
   {
