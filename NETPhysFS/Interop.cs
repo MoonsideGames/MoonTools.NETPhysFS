@@ -105,6 +105,9 @@ namespace MoonTools.NETPhysFS
     public static extern IntPtr PHYSFS_getUserDir();
 
     [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr PHYSFS_getPrefDir(string org, string app);
+
+    [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern IntPtr PHYSFS_getWriteDir();
 
     [DllImport(s_nativeLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]

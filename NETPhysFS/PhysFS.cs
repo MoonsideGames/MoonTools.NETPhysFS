@@ -293,6 +293,21 @@ namespace MoonTools.NETPhysFS
     }
 
     /// <summary>
+    /// Get the user-and-app-specific path where files can be written.
+    /// </summary>
+    /// <param name="org">
+    /// The name of your organization
+    /// </param>
+    /// <param name="app">
+    /// The name of your application
+    /// </param>
+    /// <returns>String of user dir in platform-dependent notation, OR null if there's a problem (creating directory failed, etc)</returns>
+    public string GetPrefDir(string org, string app)
+    {
+      return Marshal.PtrToStringAnsi(Interop.PHYSFS_getPrefDir(org, app));
+    }
+
+    /// <summary>
     /// Get path where PhysicsFS will allow file writing.
     /// </summary>
     /// <para>
